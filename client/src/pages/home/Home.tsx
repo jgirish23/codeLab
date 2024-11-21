@@ -12,7 +12,7 @@ const projectTypes = [
 const  handleSelectedValue = (selectedValue:string,navigate:any) => {
     console.log('Selected Project:', selectedValue);  // Output: Selected Project: 1 for example
     console.log(`${projectTypes[Number(selectedValue)-1]}`);
-    navigate(`/codelab`,{state: {selectedValue}});
+    navigate(`/codelab`,{state: `${projectTypes[Number(selectedValue)-1]}`});
 
 
 }
@@ -22,13 +22,14 @@ export const Home = () => {
     const {isPending, error, data} = useTest();
     const navigate = useNavigate();
 
-    // if (isPending) {
-    //     return <p>Loading...</p>
-    // }
-    // console.log("data: " + data);
+    if (isPending) {
+        return <p>Loading...</p>
+    }
+    console.log("data: ")
+    console.log(data);
     return (
         <div>
-            {/* <h1>{data}</h1> */}
+            <h1>{data?data:""}</h1>
             <input placeholder="Name the Project" ></input>
             <select value={selectedValue} onChange={(e) => setSelectedValue(e.target.value)}>
                 {options.map((option) => (
