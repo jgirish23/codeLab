@@ -11,8 +11,8 @@ export const Code = () => {
         <div className="grid-container">
             <div className="grid-item grid-item-files"><h1>{item}</h1></div>
             <div className="grid-item grid-item-coding">2</div>
-            <div className="grid-item grid-item-output"><SocketConn/></div>
-            <div className="grid-item grid-item-terminal"><TerminalComponent/></div>
+            <div className="grid-item grid-item-output">3</div>
+            <div className="grid-item grid-item-terminal"><SocketConn/></div>
         </div>
     )
 }
