@@ -6,7 +6,9 @@ import { useStompClient, useSubscription } from 'react-stomp-hooks';
 const user = "root";
 
 const handleCommandResponse = (message, instance) => {
-  instance?.writeln(message);
+  console.log("Command response:", message);
+  instance.writeln(message);
+  // instance.write(user + "# ");
 };
 
 export const TerminalComponent = () => {
@@ -31,20 +33,20 @@ export const TerminalComponent = () => {
     instance.write(user + "# ");
 
     const handleInput = (data) => {
-      instance.write(data);
-      commandRef.current += data; // Update the command in the ref
-
       if (data === '\n' || data === '\r') {
         const command = commandRef.current.trim();
         commandRef.current = ""; // Clear the command
 
-        instance.writeln(""); // Move to a new line
-        instance.write(user + "# "); // Write the prompt again
+        instance.writeln("\r"); // Move to a new line
 
         if (stompClient) {
           console.log("Command sent:", command);
-          stompClient.publish({ destination: '/app/broadcast', body: JSON.stringify(command) });
+          stompClient.publish({ destination: '/app/execute', body: command });
         }
+      }else {
+        // Append to the command buffer
+        commandRef.current += data;
+        instance.write(data); // Display typed character in the terminal
       }
     };
 
@@ -54,13 +56,13 @@ export const TerminalComponent = () => {
     // Handle resize event
     window.addEventListener('resize', handleResize);
     fitAddon.fit();
-
+    
     return () => {
       // Cleanup event listeners
       window.removeEventListener('resize', handleResize);
       disposeOnData.dispose();
     };
-  }, [instance, stompClient]);
+  }, [instance]);
 
   return <div ref={ref} style={{ height: '100%', width: '100%', textAlign: "left" }} />;
 };
