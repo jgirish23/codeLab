@@ -18,6 +18,7 @@ public class TerminalController {
     private PtyProcess ptyProcess;
     private BufferedWriter processWriter;
     private BufferedReader processReader;
+    private Integer cnt = 0;
 
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
@@ -26,10 +27,7 @@ public class TerminalController {
         // Initialize terminal process
         Map<String, String> env = new HashMap<>();
         env.put("TERM","xterm-256color");
-//        ptyProcess = PtyProcess.exec(new String[]{"/bin/bash", "-i"}, env, null);
         ptyProcess = PtyProcess.exec(new String[]{"/bin/bash", "-i", "-c", "stty raw -echo; exec bash"}, env, null);
-//        ptyProcess = PtyProcess.exec(new String[]{"sudo", "-u", "root", "/bin/bash", "-i"}, env, "/home/darkway/Documents");
-
         processWriter = new BufferedWriter(new OutputStreamWriter(ptyProcess.getOutputStream()));
         processReader = new BufferedReader(new InputStreamReader(ptyProcess.getInputStream()));
 
@@ -40,27 +38,43 @@ public class TerminalController {
                 log.info("Thread started:");
                 while ((line = processReader.readLine()) != null ) {
                     log.info("Thread line: " + line);
-                    messagingTemplate.convertAndSend("/queue/reply", line );
-                    Thread.sleep(1000);
+                    cnt++;
+                    if(cnt>3)messagingTemplate.convertAndSend("/queue/reply", line);
                 }
                 log.info("Thread ended:");
-            } catch (IOException | InterruptedException e) {
+            } catch (IOException e) {
                 log.error("Error in output reading thread: ", e);
                 e.printStackTrace();
             }
         }).start();
+        processWriter.write( "\n");
+        processWriter.flush();
+
     }
 
     @MessageMapping("/execute")
     public void handleCommand(String command) throws IOException {
         try {
             log.info("command: " + command);
+            cnt=0;
+            processWriter.write("echo FLOW_STARTED\n");
             processWriter.write(command + "\n");
+            processWriter.write("echo FLOW_IS_COMPLETE\n");
             processWriter.flush();
         } catch (IOException e) {
             log.error("Error writing command to process: ", e);
         }
-//        messagingTemplate.convertAndSend("/queue/reply", command);
+    }
+
+    @MessageMapping("/hostname")
+    public void handleHostNameCommand() throws IOException {
+        try {
+            log.info("command: " + "echo '$(whoami)@$(hostname)'");
+            processWriter.write("echo '$(whoami)@$(hostname)'" + "\n");
+            processWriter.flush();
+        } catch (IOException e) {
+            log.error("Error writing command to process: ", e);
+        }
     }
 
     // Cleanup resources on shutdown

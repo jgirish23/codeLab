@@ -12,7 +12,7 @@ const projectTypes = [
 const  handleSelectedValue = (selectedValue:string,navigate:any) => {
     console.log('Selected Project:', selectedValue);  // Output: Selected Project: 1 for example
     console.log(`${projectTypes[Number(selectedValue)-1]}`);
-    navigate(`/codelab`,{state: {selectedValue}});
+    navigate(`/codelab`,{state: {"projectName":projectTypes[Number(selectedValue)-1]}});
 
 
 }
