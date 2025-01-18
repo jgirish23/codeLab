@@ -57,9 +57,9 @@ public class TerminalController {
         try {
             log.info("command: " + command);
             cnt=0;
-            processWriter.write("echo FLOW_STARTED\n");
-            processWriter.write(command + "\n");
-            processWriter.write("echo FLOW_IS_COMPLETE\n");
+            processWriter.write("echo FLOW_STARTED\r");
+            if(!command.isEmpty())processWriter.write(command+'\r');
+            processWriter.write("echo FLOW_IS_COMPLETE\r");
             processWriter.flush();
         } catch (IOException e) {
             log.error("Error writing command to process: ", e);

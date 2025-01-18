@@ -33,8 +33,7 @@ export const TerminalComponent = () => {
     // Write initial messages on the terminal
     // instance.writeln('Welcome react-xtermjs!');
     // instance.writeln('This is a simple example using an addon.');
-    // stompClient.publish({ destination: '/app/execute', body: "\n" });
-    instance.write(user + "# ");
+    stompClient.publish({ destination: '/app/execute', body: "clear" });
 
     const handleInput = (data) => {
       if (data === '\n' || data === '\r') {
@@ -45,6 +44,9 @@ export const TerminalComponent = () => {
 
         if (stompClient) {
           console.log("Command sent:", command);
+          if(command === ""){
+            // stompClient.publish({ destination: '/app/execute', body: "\n" });
+          }
           stompClient.publish({ destination: '/app/execute', body: command });
         }
       }else {
