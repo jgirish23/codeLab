@@ -10,7 +10,7 @@ const queryClient = new QueryClient();
 
 function App() {
   const stompConfig = {
-    url: 'http://localhost:8081/ws-endpoint', // Example WebSocket URL for STOMP connection
+    url: 'http://localhost:8080/ws-endpoint', // Example WebSocket URL for STOMP connection
     reconnectDelay: 5000, // Optional: auto reconnect after a delay
     headers: {
       Authorization: 'Bearer your_token', // Optional: add authentication headers if needed

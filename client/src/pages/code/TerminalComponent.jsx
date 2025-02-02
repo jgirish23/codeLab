@@ -9,6 +9,7 @@ const handleCommandResponse = (message, instance,stompClient) => {
   console.log("Command response:", message);
   if(message != "FLOW_IS_COMPLETE"){
     instance.writeln("");
+    console.log("Command response:", message);
     instance.write(message);
   }
   

@@ -1,6 +1,8 @@
 package com.codelab.codelab.controller;
 
 import com.pty4j.PtyProcess;
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.PreDestroy;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -16,77 +18,112 @@ import java.util.Map;
 public class TerminalController {
 
     private PtyProcess ptyProcess;
-    private BufferedWriter processWriter;
-    private BufferedReader processReader;
-    private Integer cnt = 0;
+    private InputStream processInputStream;
+    private OutputStream processOutputStream;
+    private final Object lock = new Object(); // Lock for synchronization
 
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
 
     public TerminalController() throws IOException {
-        // Initialize terminal process
-        Map<String, String> env = new HashMap<>();
-        env.put("TERM","xterm-256color");
-        ptyProcess = PtyProcess.exec(new String[]{"/bin/bash", "-i", "-c", "stty raw -echo; exec bash"}, env, null);
-        processWriter = new BufferedWriter(new OutputStreamWriter(ptyProcess.getOutputStream()));
-        processReader = new BufferedReader(new InputStreamReader(ptyProcess.getInputStream()));
+        initializeTerminalProcess();
+    }
 
-        // Start a thread to read terminal output
+    @PostConstruct
+    private void startReadingThread() {
         new Thread(() -> {
-            String line;
-            try {
-                log.info("Thread started:");
-                while ((line = processReader.readLine()) != null ) {
-                    log.info("Thread line: " + line);
-                    cnt++;
-                    if(cnt>3)messagingTemplate.convertAndSend("/queue/reply", line);
+            while (!Thread.currentThread().isInterrupted()) {
+                synchronized (lock) {
+                    try {
+                        byte[] buffer = new byte[1024];
+                        int bytesRead;
+                        while ((bytesRead = processInputStream.read(buffer)) != -1) {
+                            String output = new String(buffer, 0, bytesRead);
+                            log.info("Terminal Output: " + output);
+                            messagingTemplate.convertAndSend("/queue/reply", output);
+                        }
+                    } catch (IOException e) {
+                        log.error("Error reading process output:", e);
+                        reconnectTerminalProcess();
+                    }
                 }
-                log.info("Thread ended:");
-            } catch (IOException e) {
-                log.error("Error in output reading thread: ", e);
-                e.printStackTrace();
             }
         }).start();
-        processWriter.write( "\n");
-        processWriter.flush();
+    }
 
+    private void initializeTerminalProcess() throws IOException {
+        Map<String, String> env = new HashMap<>();
+        env.put("TERM", "xterm-256color");
+        ptyProcess = PtyProcess.exec(
+                new String[]{"/bin/bash", "-i", "-c", "stty raw -echo; trap 'exit' INT; exec bash"},
+                env,
+                null
+        );
+        processInputStream = ptyProcess.getInputStream();
+        processOutputStream = ptyProcess.getOutputStream();
+    }
+
+    private void reconnectTerminalProcess() {
+        try {
+            // Clean up existing resources
+            if (ptyProcess != null) {
+                ptyProcess.destroy();
+            }
+            if (processInputStream != null) {
+                processInputStream.close();
+            }
+            if (processOutputStream != null) {
+                processOutputStream.close();
+            }
+
+            // Reinitialize the terminal process
+            initializeTerminalProcess();
+            log.info("Terminal process reconnected.");
+        } catch (IOException e) {
+            log.error("Failed to reconnect terminal process:", e);
+        }
     }
 
     @MessageMapping("/execute")
     public void handleCommand(String command) throws IOException {
         try {
-            log.info("command: " + command);
-            cnt=0;
-            processWriter.write("echo FLOW_STARTED\r");
-            if(!command.isEmpty())processWriter.write(command+'\r');
-            processWriter.write("echo FLOW_IS_COMPLETE\r");
-            processWriter.flush();
+            log.info("Command received: " + command);
+            if (command.equals("\u0003")) { // Handle Ctrl+C
+                log.info("Sending SIGINT (Ctrl+C) to the process.");
+
+                // Send SIGINT to the actual child process
+                ProcessHandle.of(ptyProcess.pid()).ifPresent(process -> process.destroy());
+                log.info("Process with ^c: " +  ptyProcess.pid());
+
+                log.info("Process terminated. Restarting shell...");
+                reconnectTerminalProcess(); // Restart shell if needed
+            } else {
+                log.info("Sending command: " + command);
+                log.info("Process without ^c: " +  ptyProcess.pid());
+                processOutputStream.write((command + "\n").getBytes()); // Send other commands
+                processOutputStream.flush();
+            }
         } catch (IOException e) {
             log.error("Error writing command to process: ", e);
         }
     }
 
-    @MessageMapping("/hostname")
-    public void handleHostNameCommand() throws IOException {
-        try {
-            log.info("command: " + "echo '$(whoami)@$(hostname)'");
-            processWriter.write("echo '$(whoami)@$(hostname)'" + "\n");
-            processWriter.flush();
-        } catch (IOException e) {
-            log.error("Error writing command to process: ", e);
-        }
-    }
-
-    // Cleanup resources on shutdown
-    public void destroy() throws IOException {
-        if (ptyProcess != null) {
-            ptyProcess.destroy();
-        }
-        if (processWriter != null) {
-            processWriter.close();
-        }
-        if (processReader != null) {
-            processReader.close();
+    @PreDestroy
+    public void destroy() {
+        synchronized (lock) {
+            try {
+                if (ptyProcess != null) {
+                    ptyProcess.destroy();
+                }
+                if (processInputStream != null) {
+                    processInputStream.close();
+                }
+                if (processOutputStream != null) {
+                    processOutputStream.close();
+                }
+            } catch (IOException e) {
+                log.error("Error cleaning up resources:", e);
+            }
         }
     }
 }
