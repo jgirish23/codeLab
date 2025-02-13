@@ -20,6 +20,7 @@ COPY target/codelab-*.jar app.jar
 
 # Make port 8080 available to the world outside this container
 EXPOSE 8080
+EXPOSE 8000
 
 # Run the JAR file
 CMD ["java", "-jar", "app.jar"]

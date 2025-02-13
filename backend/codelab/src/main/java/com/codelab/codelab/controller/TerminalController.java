@@ -77,8 +77,8 @@ public class TerminalController {
             }
 
             // Reinitialize the terminal process
-            initializeTerminalProcess();
             log.info("Terminal process reconnected.");
+            initializeTerminalProcess();
         } catch (IOException e) {
             log.error("Failed to reconnect terminal process:", e);
         }
@@ -90,16 +90,10 @@ public class TerminalController {
             log.info("Command received: " + command);
             if (command.equals("\u0003")) { // Handle Ctrl+C
                 log.info("Sending SIGINT (Ctrl+C) to the process.");
-
-                // Send SIGINT to the actual child process
-                ProcessHandle.of(ptyProcess.pid()).ifPresent(process -> process.destroy());
-                log.info("Process with ^c: " +  ptyProcess.pid());
-
-                log.info("Process terminated. Restarting shell...");
+//                processOutputStream.write((command + "\n").getBytes()); // Send other commands
+//                processOutputStream.flush();
                 reconnectTerminalProcess(); // Restart shell if needed
             } else {
-                log.info("Sending command: " + command);
-                log.info("Process without ^c: " +  ptyProcess.pid());
                 processOutputStream.write((command + "\n").getBytes()); // Send other commands
                 processOutputStream.flush();
             }

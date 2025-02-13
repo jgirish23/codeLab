@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 const projectTypes = [
     "React js",
     "Python",
+    "javascript",
     "C++"
 ]
 

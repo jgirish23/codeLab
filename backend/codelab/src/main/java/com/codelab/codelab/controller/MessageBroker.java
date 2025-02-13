@@ -18,9 +18,7 @@ public class MessageBroker {
 
     @MessageMapping("/broadcast")
     public void broadcastMessage(@Payload String message) {
-        log.info("message:");
-        log.info(message);
+        log.info("message: " + message);
         messagingTemplate.convertAndSend("/queue/reply", "You have a message \n\r from someone: " + message);
-//        return "You have received a message: " + message;
     }
 }
