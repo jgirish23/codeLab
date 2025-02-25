@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useFile } from "../../api/service";
 import { useFileTree } from "../../api/service";
+import "../../common/styles/FileTree.css";
 
 export const FileTreeNode = ({ fileName, nodes, setFileUrl, setFilePath, currentFilePath }) => {
     const { mutateAsync: getFile } = useFile();
@@ -30,7 +31,6 @@ export const FileTreeNode = ({ fileName, nodes, setFileUrl, setFilePath, current
             setSubDir({[filePath]:false});
             return;
         }
-        console.log("Fetching directory:", filePath);
         //Fetch new directory data
         const extractedData = await callFetchSubDir(filePath);
        
@@ -45,12 +45,12 @@ export const FileTreeNode = ({ fileName, nodes, setFileUrl, setFilePath, current
     if(status === "pending") return <h1>Loading...</h1>;
 
     return (
-        <div>
+        <div className="FileTreeNode">
             <p className={nodes ? "" : "file-node"}>{fileName}</p>
             {nodes && (
-                <ul>
+                <ul id="FileTree_ul">
                     {Object.keys(nodes).map((child) => (
-                        <li key={child}>
+                        <li id="FileTree_li" key={child}>
                             {
                             nodes[child] ? 
                             <>

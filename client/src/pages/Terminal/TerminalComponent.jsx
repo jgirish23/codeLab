@@ -4,8 +4,6 @@ import { useXTerm } from 'react-xtermjs';
 import { useStompClient, useSubscription } from 'react-stomp-hooks';
 
 const handleCommandResponse = (message, instance,stompClient) => {
-  console.log("Command response:", message);
-  
   const normalizedMessage = message
                                   .replace(/\r\n/g, '\n')  // Replace Windows line endings with Unix-style line breaks
                                   .replace(/\r/g, '\n');   // Replace remaining carriage returns with newlines
@@ -44,7 +42,6 @@ export const TerminalComponent = () => {
         commandRef.current = ""; // Clear the command
 
         if (stompClient) {
-          console.log("Command sent:", command);
           if(command === ""){
             // stompClient.publish({ destination: '/app/execute', body: "\n" });
           }
@@ -58,7 +55,6 @@ export const TerminalComponent = () => {
         //^c when used terminate
         
         if (stompClient) {
-          console.log("Command sent:", data);
           instance.writeln("^C");
           stompClient.publish({ destination: '/app/execute', body: data });
         }

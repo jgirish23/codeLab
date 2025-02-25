@@ -4,6 +4,7 @@ import com.pty4j.PtyProcess;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.tomcat.util.json.JSONParser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
@@ -21,6 +22,7 @@ public class TerminalController {
     private InputStream processInputStream;
     private OutputStream processOutputStream;
     private final Object lock = new Object(); // Lock for synchronization
+    private Thread t1;
 
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
@@ -31,7 +33,7 @@ public class TerminalController {
 
     @PostConstruct
     private void startReadingThread() {
-        new Thread(() -> {
+        t1 = new Thread(() -> {
             while (!Thread.currentThread().isInterrupted()) {
                 synchronized (lock) {
                     try {
@@ -48,7 +50,10 @@ public class TerminalController {
                     }
                 }
             }
-        }).start();
+        });
+        t1.start();
+
+
     }
 
     private void initializeTerminalProcess() throws IOException {
@@ -92,12 +97,36 @@ public class TerminalController {
                 log.info("Sending SIGINT (Ctrl+C) to the process.");
 //                processOutputStream.write((command + "\n").getBytes()); // Send other commands
 //                processOutputStream.flush();
+//                t1.interrupt();
                 reconnectTerminalProcess(); // Restart shell if needed
             } else {
                 processOutputStream.write((command + "\n").getBytes()); // Send other commands
                 processOutputStream.flush();
             }
         } catch (IOException e) {
+            log.error("Error writing command to process: ", e);
+        }
+    }
+
+    @MessageMapping("/runFile")
+    public void runFileHandleCommand(String command) throws IOException {
+        try {
+            log.info("Command received: " + command);
+            JSONParser jsonParser = new JSONParser(command);
+            Map<String, Object> jsonObject = jsonParser.parseObject();
+
+            String filePath = jsonObject.get("path").toString();
+            String runCommand = jsonObject.get("command").toString();
+            String projectType = jsonObject.get("projectType").toString();
+            String fileUploadpath = System.getProperty("user.dir");
+            String fullFilePath = fileUploadpath+File.separator + filePath;
+            if(projectType.equals("React js")){
+                processOutputStream.write((runCommand + "\n").getBytes()); // Send other commands
+            }else{
+                processOutputStream.write((runCommand + " " +fullFilePath + "\n").getBytes()); // Send other commands
+            }
+            processOutputStream.flush();
+        } catch (Exception e) {
             log.error("Error writing command to process: ", e);
         }
     }

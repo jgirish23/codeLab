@@ -7,9 +7,8 @@ import { useState, useEffect } from "react";
 import { useSaveFile } from "../../api/service";
 import { useStompClient } from 'react-stomp-hooks';
 
-export const Editor = ({ fileUrl, filePath }: any) => {
+export const Editor = ({ fileUrl, filePath, projectType }: any) => {
     const [fileContent, setFileContent] = useState("");
-    // const formattedText = fileContent.replace(/\n/g, "\r\n"); // Ensure new lines are handled correctly
     const {mutateAsync: saveFile } = useSaveFile(fileContent, filePath );
     const stompClient = useStompClient();
     const [fileStatus, setFileStatus] = useState(true);
@@ -37,16 +36,36 @@ export const Editor = ({ fileUrl, filePath }: any) => {
     }, [fileUrl]);
 
     const handleSaveFile = () => {
-        console.log("saving ...");
         saveFile();
     }
 
     const runProject = () => {
-        console.log("Running ...");
-        stompClient?.publish({ destination: '/app/execute', body: "\u0003;export PATH=$PATH:$(npm root -g);cd del/app;npm install --save-dev web-vitals;PORT=8000 npm run start" });
-        // stompClient?.publish({ destination: '/app/execute', body: "export PATH=$PATH:$(npm root -g)\r"});
-        // stompClient?.publish({ destination: '/app/execute', body: "cd del/app\r" });
-        // stompClient?.publish({ destination: '/app/execute', body: "PORT=8000 npm run start\r" });
+        if(projectType === "React js") {
+            let pathToPackage = filePath;
+            let len: number = pathToPackage.length;
+            for(len = pathToPackage.length-1;len>=0;len--){
+                if(pathToPackage[len] === "/"){
+                    pathToPackage = pathToPackage.slice(0,len);
+                    break;
+                }
+            }
+            
+            stompClient?.publish({ destination: '/app/runFile', 
+                body: JSON.stringify({projectType: projectType, path: filePath, command: `\u0003;cd ${pathToPackage};export PATH=$PATH:$(npm root -g);npm install --save-dev web-vitals;PORT=8000 npm run start`}) 
+            });
+        }else if(projectType === "Python"){
+            stompClient?.publish({ 
+                destination: '/app/runFile', 
+                body: JSON.stringify({projectType: projectType, path: filePath, command: "python3"})
+            });
+        }else if(projectType === "javascript"){
+            stompClient?.publish({ 
+                destination: '/app/runFile', 
+                body: JSON.stringify({projectType: projectType, path: filePath, command: "node"})
+            });
+        }else{
+
+        }
     }
 
     return (
@@ -54,7 +73,6 @@ export const Editor = ({ fileUrl, filePath }: any) => {
             <h2>{filePath.replaceAll("/"," > ")}</h2>
             <button onClick={() => handleSaveFile()} > Save </button>
             <button onClick={() => runProject()} > Run </button>
-            {fileStatus && <h1>Geting file content.....</h1>}
             <AceEditor
                 mode="javascript"
                 theme="github"

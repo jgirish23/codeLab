@@ -14,7 +14,6 @@ function App() {
   const [url, setUrl] = useState("http://localhost:8080/ws-endpoint"); // Initial URL
 
   const handleDisconnect = () => {
-    console.log("❌ WebSocket Disconnected. Attempting Reconnect...");
     setTimeout(() => {
       setUrl(""); // Temporarily clear the URL to reset the connection
       setTimeout(() => setUrl("http://localhost:8080/ws-endpoint"), 1000); // Reconnect after 1s

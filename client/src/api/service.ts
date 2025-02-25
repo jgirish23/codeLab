@@ -3,13 +3,13 @@ import {
     useQuery,
   } from '@tanstack/react-query'
   
-export const useTest = () => useQuery({
-    queryKey: ['repoData'],
+export const useCreateSampleTemplate = (folderName: string, fileName: string) => useQuery({
+    queryKey: ['repoData', folderName, fileName],
     queryFn: () =>
-      fetch('http://localhost:8080').then((res) =>
+      fetch(`http://localhost:8080/r2/downloadTemplate?folderName=${folderName}&fileName=${fileName}`).then((res) =>
         res.json(),
       ),
-      retry: 3
+      retry: false
   })
 
   export const useFileTree = () => useMutation({
