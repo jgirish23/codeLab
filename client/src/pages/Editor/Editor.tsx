@@ -70,7 +70,7 @@ export const Editor = ({ fileUrl, filePath, projectType }: any) => {
 
     return (
         <>
-            <h2>{filePath.replaceAll("/"," > ")}</h2>
+            <h2 style={{ color: "#007bff", fontSize: "20px", fontWeight: "bold" }}>{filePath.replaceAll("/"," > ")}</h2>
             <button onClick={() => handleSaveFile()} > Save </button>
             <button onClick={() => runProject()} > Run </button>
             <AceEditor

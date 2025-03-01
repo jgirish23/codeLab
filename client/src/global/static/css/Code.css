@@ -22,6 +22,11 @@
     grid-row-end: 3;
 }
 
+.grid-item-terminal {
+    display: flex;
+    overflow: scroll;
+}
+
 .grid-item-files {
     overflow-y: scroll;
     overflow-x: hidden;

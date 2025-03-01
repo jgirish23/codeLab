@@ -111,5 +111,5 @@ export const TerminalComponent = () => {
     };
   }, [instance, stompClient]);
 
-  return <div ref={ref} style={{ height: '100%', width: '100%', textAlign: "left" }} />;
+  return <div ref={ref} style={{ height: "100%", width: '100%', textAlign: "left" }} />;
 };

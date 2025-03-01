@@ -29,7 +29,6 @@ public class home {
         Map<String, Object> dirMap = new LinkedHashMap<>();
         List<String> filesList = new ArrayList<>();
         List<String> subDirs = new ArrayList<>();
-//        Map<String, Object> subDirs = new LinkedHashMap<>();
 
         File[] files = directory.listFiles();
         if (files != null) {
@@ -41,7 +40,7 @@ public class home {
                 }
             }
         }
-//        if(!subDirs.isEmpty())dirMap.putAll(subDirs);
+
         for(String file : subDirs){
             dirMap.put(file, "Directory");
         }
@@ -60,8 +59,7 @@ public class home {
 
         File dirPath = new File(currentDir + File.separator + path);
         String DirName = Paths.get(dirPath.toString()).getFileName().toString();
-        System.out.println("DirName:");
-        System.out.println(DirName);
+
         // Get directory structure
         Map<String, Object> directoryTree = new HashMap<>();
         directoryTree.put(DirName, listFiles(dirPath));
@@ -70,7 +68,6 @@ public class home {
         ObjectMapper objectMapper = new ObjectMapper();
         String json = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(directoryTree);
 
-        System.out.println(json);
         return json;
     }
 
@@ -81,15 +78,7 @@ public class home {
         // Setting up the filepath
         String filePath = fileUploadpath+File.separator+path;
         Path uploadPath = Path.of(filePath);
-        System.out.println("filePath: " + filePath);
 
-//        // Remove leading and trailing quotes if they exist
-//        if (fileContent.startsWith("\"") && fileContent.endsWith("\"")) {
-//            fileContent = fileContent.substring(1, fileContent.length() - 1);
-//        }
-
-        // Replace "\n" with system line separator to ensure proper formatting
-//        String formattedContent = fileContent.replace("\\n", System.lineSeparator());
         Files.write(uploadPath, fileContent.getBytes(), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
 
         return ResponseEntity.ok("Filed saved Successfully");
@@ -98,19 +87,10 @@ public class home {
     @GetMapping("/file")
     public ResponseEntity<?> getFile(@RequestParam("path") String path) throws JsonProcessingException, FileNotFoundException {
         String fileUploadpath = System.getProperty("user.dir");
-        String[] filenames = this.getFiles();
-        System.out.println("filenames: ");
-        for(String k : filenames){
-            System.out.println(k);
-        }
-//        boolean contains = Arrays.asList(filenames).contains(path);
-//        if(!contains) {
-//            return new ResponseEntity("FIle Not Found",HttpStatus.NOT_FOUND);
-//        }
 
         // Setting up the filepath
         String filePath = fileUploadpath+File.separator+path;
-        System.out.println("filePath: " + filePath);
+
         // Creating new file instance
         File file= new File(filePath);
 
@@ -137,9 +117,6 @@ public class home {
         // Creating a new File instance
         File directory= new File(folderPath);
 
-        // list() method returns an array of strings
-        // naming the files and directories
-        // in the directory denoted by this abstract pathname
         String[] filenames = directory.list();
 
         // returning the list of filenames
