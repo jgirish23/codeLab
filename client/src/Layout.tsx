@@ -4,7 +4,7 @@ const Layout = () => {
   return (
     <>
       <div id="Header">
-        <h1>This is header</h1>
+        <h1 style={{margin: "1rem 0 0 1rem", color: "rgb(146, 129, 104)"}}>CodeLab</h1>
       </div>
       <Outlet />
       {/* <div id="Footer">

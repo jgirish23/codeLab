@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useFileTree } from "../../api/service";
 import { FileTreeNode } from "../FileTree/FileTreeNode";
 
-export const FileTree = ({ setFileUrl, setFilePath }) => {
+export const FileTree = ({ setFileUrl, setFilePath, projectId }) => {
     const { mutateAsync: fetchFileTree, status, isSuccess } = useFileTree();
     const [fileStructure, setFileStructure] = useState(null);
     const [projectName, setProjectName] = useState([]);
@@ -11,7 +11,7 @@ export const FileTree = ({ setFileUrl, setFilePath }) => {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const data = await fetchFileTree("/project");
+                const data = await fetchFileTree("/project/" + projectId);
                 setProjectName(Object.keys(data))
                 setFileStructure(data[Object.keys(data)[0]]); // Store data in state
             } catch (error) {

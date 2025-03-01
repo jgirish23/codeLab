@@ -15,7 +15,8 @@ export const Code = () => {
     const location = useLocation()
     const state = location.state;
     const projectType = state.projectType;
-    const {isPending, isFetching, isLoading, isSuccess} = useCreateSampleTemplate("sample-template",projectType);
+    const projectId = state.projectId;
+    const {isPending, isFetching, isLoading, isSuccess} = useCreateSampleTemplate("sample-template", projectId, projectType);
 
     if (!isSuccess) {
         if(isPending){
@@ -28,7 +29,7 @@ export const Code = () => {
     }
     return (
         <div className="grid-container">
-            <div className="grid-item grid-item-files"><FileTree setFileUrl={setFileUrl} setFilePath={setFilePath}/></div>
+            <div className="grid-item grid-item-files"><FileTree setFileUrl={setFileUrl} setFilePath={setFilePath} projectId={projectId}/></div>
             <div className="grid-item grid-item-coding"><Editor fileUrl={fileUrl} filePath={filePath} projectType={state.projectName}/></div>
             <div className="grid-item grid-item-output"><Display/></div>
             <div className="grid-item grid-item-terminal"><TerminalComponent/></div>

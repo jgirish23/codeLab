@@ -42,11 +42,11 @@ public class home {
             }
         }
 //        if(!subDirs.isEmpty())dirMap.putAll(subDirs);
-        for(String file : filesList){
-            dirMap.put(file, null);
-        }
         for(String file : subDirs){
             dirMap.put(file, "Directory");
+        }
+        for(String file : filesList){
+            dirMap.put(file, null);
         }
         return dirMap;
     }

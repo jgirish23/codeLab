@@ -3,10 +3,10 @@ import {
     useQuery,
   } from '@tanstack/react-query'
   
-export const useCreateSampleTemplate = (folderName: string, fileName: string) => useQuery({
-    queryKey: ['repoData', folderName, fileName],
+export const useCreateSampleTemplate = (folderName: string,projectId: string, projectType: string) => useQuery({
+    queryKey: ['repoData', folderName, projectType],
     queryFn: () =>
-      fetch(`http://localhost:8080/r2/downloadTemplate?folderName=${folderName}&fileName=${fileName}`).then((res) =>
+      fetch(`http://localhost:8080/r2/downloadTemplate?folderName=${folderName}&projectType=${projectType}&projectId=${projectId}`).then((res) =>
         res.json(),
       ),
       retry: false

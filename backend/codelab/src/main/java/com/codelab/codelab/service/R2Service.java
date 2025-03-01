@@ -2,13 +2,11 @@ package com.codelab.codelab.service;
 
 import org.springframework.stereotype.Service;
 import software.amazon.awssdk.services.s3.S3Client;
-import software.amazon.awssdk.services.s3.model.GetObjectRequest;
+import software.amazon.awssdk.services.s3.model.*;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.*;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
 
 @Service
 public class R2Service {
@@ -20,64 +18,51 @@ public class R2Service {
         this.s3Client = s3Client;
     }
 
-    public Path downloadAndExtractZip(String bucketName, String fileName, String downloadDir) throws IOException {
+    public Path downloadFolder(String bucketName,String projectId, String projectType, String downloadDir) throws IOException {
         BUCKET_NAME = bucketName;
-        Path zipPath = Path.of(downloadDir, fileName);
-        Path extractDir = Path.of(downloadDir, fileName.replace(".zip", "")); // Extracted folder
+        Path extractDir = Path.of(downloadDir,projectId); // Destination folder
 
         // ✅ Ensure parent directory exists
-        if (!Files.exists(zipPath.getParent())) {
-            Files.createDirectories(zipPath.getParent());
-        }
-
-        // 🟢 Step 1: Download ZIP file
-        GetObjectRequest request = GetObjectRequest.builder()
-                .bucket(BUCKET_NAME)
-                .key(fileName)
-                .build();
-
-        try (InputStream responseStream = s3Client.getObject(request)) {
-            Files.copy(responseStream, zipPath, StandardCopyOption.REPLACE_EXISTING);
-        }
-
-        // 🟢 Step 2: Extract ZIP
-        unzipFile(zipPath, extractDir);
-
-        // ✅ Cleanup: Delete ZIP after extraction (optional)
-        Files.deleteIfExists(zipPath);
-
-        return extractDir;
-    }
-
-    private void unzipFile(Path zipFilePath, Path extractDir) throws IOException {
         if (!Files.exists(extractDir)) {
             Files.createDirectories(extractDir);
         }
 
-        try (ZipInputStream zis = new ZipInputStream(Files.newInputStream(zipFilePath))) {
-            ZipEntry zipEntry;
-            while ((zipEntry = zis.getNextEntry()) != null) {
-                Path extractedFile = extractDir.resolve(zipEntry.getName());
+        // 🟢 Step 1: List all files in the folder
+        ListObjectsV2Request listRequest = ListObjectsV2Request.builder()
+                .bucket(BUCKET_NAME)
+                .prefix(projectType.endsWith("/") ? projectType : projectType + "/") // Ensure folder path ends with "/"
+                .build();
 
-                // ✅ Ensure extracted file path is inside extractDir (avoid Zip Slip vulnerability)
-                if (!extractedFile.startsWith(extractDir)) {
-                    throw new IOException("Bad ZIP entry: " + zipEntry.getName());
-                }
+        ListObjectsV2Response listResponse = s3Client.listObjectsV2(listRequest);
 
-                // ✅ Handle directories
-                if (zipEntry.isDirectory()) {
-                    Files.createDirectories(extractedFile);
-                } else {
-                    // ✅ Ensure parent directory exists before writing the file
-                    Files.createDirectories(extractedFile.getParent());
+        for (S3Object s3Object : listResponse.contents()) {
+            String objectKey = s3Object.key();
+            // 🟢 Step 2: Download each file
+            downloadFile(objectKey, projectId, extractDir);
+        }
 
-                    // ✅ Extract file
-                    Files.copy(zis, extractedFile, StandardCopyOption.REPLACE_EXISTING);
-                }
+        return extractDir;
+    }
 
-                zis.closeEntry();
-            }
+    private void downloadFile(String objectKey, String projectId, Path baseDir) throws IOException {
+        String[] secondPartOfPath = objectKey.split("/",2);
+        Path filePath = baseDir.resolve(projectId + "/" + secondPartOfPath[1]);
+
+        // ✅ Ensure parent directory exists before writing
+        Files.createDirectories(filePath.getParent());
+
+//        Path filePath = baseDir.toAbsolutePath();
+
+        // 🟢 Fetch file from R2
+        GetObjectRequest getObjectRequest = GetObjectRequest.builder()
+                .bucket(BUCKET_NAME)
+                .key(objectKey)
+                .build();
+
+        try (InputStream responseStream = s3Client.getObject(getObjectRequest)) {
+            Files.copy(responseStream, filePath, StandardCopyOption.REPLACE_EXISTING);
         }
     }
 }
+
 
