@@ -9,7 +9,8 @@ export const useCreateSampleTemplate = (folderName: string,projectId: string, pr
       fetch(`http://localhost:8080/r2/downloadTemplate?folderName=${folderName}&projectType=${projectType}&projectId=${projectId}`).then((res) =>
         res.json(),
       ),
-      retry: false
+    retry: false,
+    refetchOnWindowFocus: false
   })
 
   export const useFileTree = () => useMutation({
