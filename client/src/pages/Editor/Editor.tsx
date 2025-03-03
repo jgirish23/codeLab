@@ -51,7 +51,7 @@ export const Editor = ({ fileUrl, filePath, projectType }: any) => {
             }
             
             stompClient?.publish({ destination: '/app/runFile', 
-                body: JSON.stringify({projectType: projectType, path: filePath, command: `\u0003;cd ${pathToPackage};export PATH=$PATH:$(npm root -g);npm install --save-dev web-vitals;PORT=8000 npm run start`}) 
+                body: JSON.stringify({projectType: projectType, path: filePath, command: `\u0003;cd */*/*/app;export PATH=$PATH:$(npm root -g);npm install --save-dev web-vitals;PORT=8000 npm run start`}) 
             });
         }else if(projectType === "Python"){
             stompClient?.publish({ 

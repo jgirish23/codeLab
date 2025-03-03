@@ -3,7 +3,7 @@ import "../../global/static/css/Code.css";
 import { FileTree } from "../FileTree/FileTree";
 import {TerminalComponent} from "../Terminal/TerminalComponent";
 import { Editor } from "../Editor/Editor";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {Display} from "../Display/Display"
 import { useCreateSampleTemplate } from "../../api/service";
 
@@ -23,11 +23,6 @@ export const Code = () => {
         return <p style={{display: "flex", flexDirection: "column", alignItems: "center", marginTop: "25rem",color: "rgb(190, 176, 111)", font: "30px Arial bolder Georgia, serif",opacity: 0.5, borderRadius: "2rem", boxShadow: "0px 0px 5px #fff;"}}>Loading...</p>
         
     }
-
-
-    // useEffect(() => {
-    //     toast.loading('Loading...')
-    // }, [isPending])
 
     return (
         <>
