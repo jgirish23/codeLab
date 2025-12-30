@@ -1,7 +1,7 @@
 import { useState } from "react"
 
 export const Display = (props: {setRowHeight: React.Dispatch<React.SetStateAction<string>>}) => {
-    const [displayUrl, setrDisplayUrl] = useState("http://localhost:8000")
+    const [displayUrl, setDisplayUrl] = useState(`http://${localStorage.getItem("projectId")}.mylocal:8000`)
     const [showDisplay, setShowDisplay] = useState(false);
     // (document.getElementsByClassName("grid-container")[0] as HTMLElement).style.gridTemplateRows = "10% 90%";
     return (
