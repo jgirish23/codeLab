@@ -1,88 +1,80 @@
 import AceEditor from "react-ace";
-import "ace-builds/src-noconflict/mode-java";
 import "ace-builds/src-noconflict/mode-javascript";
 import "ace-builds/src-noconflict/theme-github";
-import "ace-builds/src-noconflict/ext-language_tools";
-import { useState, useEffect } from "react";
-import { useSaveFile } from "../../api/service";
-import { useStompClient } from 'react-stomp-hooks';
+import { useEffect, useState } from "react";
+import { useSharedWebSocket } from "../../global/utils/WebSocketProvider";
+import {useRunFile, useSaveFile} from "../../api/service";
 
-export const Editor = ({ fileUrl, filePath, projectType }: any) => {
-    const [fileContent, setFileContent] = useState("");
-    const {mutateAsync: saveFile } = useSaveFile(fileContent, filePath );
-    const stompClient = useStompClient();
-    const [fileStatus, setFileStatus] = useState(true);
+interface EditorProps {
+    fileUrl: string;
+    filePath: string;
+    projectType: "React js" | "Python" | "javascript";
+}
+
+export const Editor: React.FC<EditorProps> = ({
+                                                  fileUrl,
+                                                  filePath,
+                                                  projectType,
+                                              }) => {
+    const [fileContent, setFileContent] = useState<string>("");
+    const { ws, ready, instance } = useSharedWebSocket();
+    const { mutateAsync: saveFile } = useSaveFile(fileContent, filePath);
+    const {mutate: mutateRunFile, isSuccess: isRunFileSuccess} = useRunFile();
 
     useEffect(() => {
         if (!fileUrl) return;
 
-        const fetchFileContent = async () => {
-            try {
-                const response = await fetch(fileUrl).then(res => {
-                    setFileStatus(false);
-                    return res.text();
-                });
-                
-                // const text = await response.text();
-                setFileContent(response);
-            } catch (error) {
-                console.error("Error loading file:", error);
-            }
-        };
-
-        fetchFileContent();
-
-        return () => URL.revokeObjectURL(fileUrl);
+        fetch(fileUrl)
+            .then((r) => r.text())
+            .then(setFileContent);
     }, [fileUrl]);
 
-    const handleSaveFile = () => {
-        saveFile();
-    }
-
     const runProject = () => {
-        if(projectType === "React js") {
+        if (!ws || !ready) return;
+
+        // stop current process
+        // ws.send("\u0003");
+
+        let command = "";
+        if (projectType === "React js") {
             let pathToPackage = filePath;
-            let len: number = pathToPackage.length;
-            for(len = pathToPackage.length-1;len>=0;len--){
-                if(pathToPackage[len] === "/"){
-                    pathToPackage = pathToPackage.slice(0,len);
+            for (let i = pathToPackage.length - 1; i >= 0; i--) {
+                if (pathToPackage[i] === "/") {
+                    pathToPackage = pathToPackage.slice(0, i);
                     break;
                 }
             }
-            
-            stompClient?.publish({ destination: '/app/runFile', 
-                body: JSON.stringify({projectType: projectType, path: filePath, command: `\u0003;cd */*/*/app;export PATH=$PATH:$(npm root -g);npm install --save-dev web-vitals;PORT=8000 npm run start`}) 
-            });
-        }else if(projectType === "Python"){
-            stompClient?.publish({ 
-                destination: '/app/runFile', 
-                body: JSON.stringify({projectType: projectType, path: filePath, command: "python3"})
-            });
-        }else if(projectType === "javascript"){
-            stompClient?.publish({ 
-                destination: '/app/runFile', 
-                body: JSON.stringify({projectType: projectType, path: filePath, command: "node"})
-            });
-        }else{
 
+            command = JSON.stringify({
+                projectType: projectType,
+                path: filePath,
+                command: `\u0003;cd */*/*/app;export PATH=$PATH:$(npm root -g);npm install --save-dev web-vitals;PORT=8000 npm run start`,
+            });
+        } else if (projectType === "Python") {
+            command = JSON.stringify({ projectType: projectType, path: filePath, command: "python3" });
+        } else if (projectType === "javascript") {
+            command = JSON.stringify({ projectType: projectType, path: filePath, command: "node" });
         }
-    }
+
+        if (command) mutateRunFile(command);
+    };
 
     return (
         <>
-            <h2 style={{ color: "#007bff", fontSize: "20px", fontWeight: "bold" }}>{filePath.replaceAll("/"," > ")}</h2>
-            <button onClick={() => handleSaveFile()} > Save </button>
-            <button onClick={() => runProject()} > Run </button>
+            <h3>{filePath.replaceAll("/", " > ")}</h3>
+
+            <button onClick={() => saveFile()}>Save</button>
+            <button onClick={() => runProject()}>Run</button>
+
             <AceEditor
                 mode="javascript"
                 theme="github"
-                onChange={setFileContent}
                 value={fileContent}
-                name="editor"
-                editorProps={{ $blockScrolling: true }}
-                setOptions={{ useWorker: false }}
+                onChange={setFileContent}
+                width="100%"
+                height="90%"
                 fontSize={14}
-                style={{ width: "100%", height: "90%" }}
+                setOptions={{ useWorker: false }}
             />
         </>
     );

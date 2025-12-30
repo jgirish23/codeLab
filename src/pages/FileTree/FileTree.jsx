@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useFileTree } from "../../api/service";
-import { FileTreeNode } from "../FileTree/FileTreeNode";
+import { FileTreeNode } from "./FileTreeNode";
 
 export const FileTree = ({ setFileUrl, setFilePath, projectId }) => {
     const { mutateAsync: fetchFileTree, status, isSuccess } = useFileTree();
