@@ -101,12 +101,12 @@ sudo systemctl restart systemd-resolved
 ```
 
 ### **Step 4: Verify DNS Setup**
-Test wildcard subdomains:
+Check that wildcard subdomains resolve correctly:
 ```bash
-ping 123.mylocal
-ping test.mylocal
+ping 123.mylocal   # Should resolve to 127.0.0.1
+ping test.mylocal  # Should resolve to 127.0.0.1
 ```
-You should see 127.0.0.1.
+✅ If the ping returns `127.0.0.1`, your DNS setup is correct.
 
 ### **Step 5: Start Minikube**
 Start Minikube with Docker driver:
@@ -118,6 +118,11 @@ minikube start --driver=docker
 Enable ingress addon:
 ```bash
 minikube addons enable ingress
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.3.0/deploy/static/provider/cloud/deploy.yaml
+```
+Check ingress controller pods:
+```bash
+kubectl get pods -n ingress-nginx
 ```
 
 ### **Step 7: Start Minikube Tunnel**
@@ -131,6 +136,10 @@ minikube tunnel
 In another terminal, forward ingress controller:
 ```bash
 kubectl port-forward -n ingress-nginx svc/ingress-nginx-controller 8081:80
+```
+Verify port forward:
+```bash
+curl http://localhost:8081
 ```
 
 ### **Step 9: Clone codeLab UI and codeLab_orchester_service **
