@@ -33,12 +33,14 @@
 
 /* Folder and File Icons */
 .File_Directory::before {
-    content: "📁"; /* Folder emoji */
+    content: "📁";
+    /* Folder emoji */
     font-size: 16px;
 }
 
 .File_node::before {
-    content: "📄"; /* File emoji */
+    content: "📄";
+    /* File emoji */
     font-size: 16px;
 }
 
