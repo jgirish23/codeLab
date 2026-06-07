@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useFileTree } from "../../api/service";
 import { FileTreeNode } from "./FileTreeNode";
 
-export const FileTree = ({ setFileUrl, setFilePath, projectId }) => {
+export const FileTree = ({ setFileUrl, setFilePath, filePath, projectId }) => {
     const { mutateAsync: fetchFileTree, status, isSuccess } = useFileTree();
     const [fileStructure, setFileStructure] = useState(null);
     const [projectName, setProjectName] = useState([]);
@@ -22,16 +22,31 @@ export const FileTree = ({ setFileUrl, setFilePath, projectId }) => {
         fetchData();
     }, [fetchFileTree]); // Runs only when `fetchFileTree` changes (which is never in normal cases)
 
-    if (status === "pending") return <h1>Loading...</h1>;
-    if (!fileStructure) return <h1>No data available</h1>;
-
     return (
-        <FileTreeNode
-            fileName={projectName}
-            currentFilePath={"project/"}
-            nodes={fileStructure}
-            setFileUrl={setFileUrl}
-            setFilePath={setFilePath}
-        />
+        <div className="filetree-container">
+            <div className="filetree-header">
+                <div className="breadcrumbs">
+                    <span className="breadcrumb-item">
+                        <span className="breadcrumb-active">Workspace</span>
+                    </span>
+                </div>
+            </div>
+            <div className="filetree-workspace">
+                {status === "pending" ? (
+                    <div className="filetree-loading">Loading...</div>
+                ) : !fileStructure ? (
+                    <div className="filetree-loading">No data available</div>
+                ) : (
+                    <FileTreeNode
+                        fileName={projectName}
+                        currentFilePath={"project/"}
+                        nodes={fileStructure}
+                        setFileUrl={setFileUrl}
+                        setFilePath={setFilePath}
+                        activeFilePath={filePath}
+                    />
+                )}
+            </div>
+        </div>
     );
 };

@@ -23,10 +23,22 @@ const WebSocketContext = createContext<IWebSocketContext>({
     instance: null,
 });
 
+const XTERM_OPTIONS = {
+    theme: {
+        background: "#111827",
+        foreground: "#F8FAFC",
+        cursor: "#3B82F6",
+        selectionBackground: "rgba(59, 130, 246, 0.3)",
+    },
+    fontSize: 13,
+    fontFamily: "Menlo, Monaco, Consolas, 'Courier New', monospace",
+    cursorBlink: true,
+};
+
 export const WebSocketProvider: React.FC<{ children: ReactNode }> = ({
                                                                          children,
                                                                      }) => {
-    const { instance, ref } = useXTerm();
+    const { instance, ref } = useXTerm({ options: XTERM_OPTIONS });
     const fitAddon = useRef(new FitAddon());
 
     const wsRef = useRef<WebSocket | null>(null);

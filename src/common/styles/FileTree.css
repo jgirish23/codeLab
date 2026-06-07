@@ -1,56 +1,163 @@
 /* FileTree.css */
 
+.filetree-container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    width: 100%;
+    background-color: var(--bg-secondary);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-subtle);
+    overflow: hidden;
+    box-shadow: var(--shadow-glass);
+}
+
+.filetree-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 1.25rem;
+    background-color: rgba(17, 24, 39, 0.4);
+    border-bottom: 1px solid var(--border-subtle);
+    user-select: none;
+}
+
+.filetree-workspace {
+    flex: 1;
+    width: 100%;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 0.75rem;
+}
+
+.filetree-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    font-family: 'Inter', sans-serif;
+}
+
+.filetree-inline-loading {
+    display: inline-block;
+    padding: 4px 8px;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    font-style: italic;
+}
+
+.FileTreeNode {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+}
+
+.FileTree_Root {
+    font-weight: 600;
+    color: var(--text-primary);
+    padding: 0.25rem 0.5rem 0.5rem 0.5rem;
+    margin-bottom: 0.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    display: flex;
+    align-items: center;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    user-select: none;
+}
+
 /* Directory styles */
 .File_Directory {
     cursor: pointer;
-    font-weight: bold;
-    color: #2a71d0;
-    padding: 4px 8px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    padding: 6px 8px;
     display: flex;
     align-items: center;
-    gap: 6px;
+    transition: all 0.15s ease;
+    border-radius: var(--radius-sm);
+    margin: 2px 0;
+    user-select: none;
 }
 
 .File_Directory:hover {
-    background-color: rgba(42, 113, 208, 0.2);
-    border-radius: 4px;
+    background-color: rgba(255, 255, 255, 0.05);
+    color: var(--text-primary);
+}
+
+.File_Directory span {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 /* File styles */
 .File_node {
     cursor: pointer;
-    color: #333;
-    padding: 4px 8px;
+    color: var(--text-secondary);
+    padding: 6px 8px;
     display: flex;
     align-items: center;
-    gap: 6px;
+    transition: all 0.15s ease;
+    border-radius: var(--radius-sm);
+    margin: 2px 0;
+    user-select: none;
 }
 
 .File_node:hover {
-    background-color: rgba(0, 0, 0, 0.1);
-    border-radius: 4px;
+    background-color: rgba(255, 255, 255, 0.05);
+    color: var(--text-primary);
 }
 
-/* Folder and File Icons */
-.File_Directory::before {
-    content: "📁";
-    /* Folder emoji */
-    font-size: 16px;
+.File_node span {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
-.File_node::before {
-    content: "📄";
-    /* File emoji */
-    font-size: 16px;
+.File_node.active {
+    background-color: rgba(59, 130, 246, 0.15);
+    color: var(--text-primary);
+    font-weight: 600;
+    border-left: 2px solid var(--accent-primary);
+    padding-left: 6px; /* Shift padding to account for border */
+}
+
+/* Icon classes and modifiers */
+.node-icon {
+    flex-shrink: 0;
+    vertical-align: middle;
+}
+
+.folder-icon {
+    color: #eab308;
+    transition: color 0.15s ease;
+}
+
+.File_Directory:hover .folder-icon {
+    color: #facc15;
+}
+
+.file-icon {
+    color: var(--text-secondary);
+    transition: color 0.15s ease;
+}
+
+.File_node:hover .file-icon,
+.File_node.active .file-icon {
+    color: #60a5fa;
 }
 
 /* Nested list indentation */
 #FileTree_ul {
     list-style: none;
-    padding-left: 16px;
+    padding-left: 12px;
     margin: 0;
+    border-left: 1px dashed rgba(255, 255, 255, 0.08);
 }
 
 #FileTree_li {
-    margin: 4px 0;
+    margin: 0;
 }

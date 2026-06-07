@@ -46,7 +46,7 @@ export const Code = () => {
         <>
             <ScreenLoader enable={isCreateTemplateFetching || isCreateTemplatePending || isCreateTemplateLoading || isStartContainerLoading} />
             {enable ? <WebSocketProvider><div className="grid-container" style={{ gridTemplateRows: rowHeight }}>
-                <div className="grid-item grid-item-files"><FileTree setFileUrl={setFileUrl} setFilePath={setFilePath}
+                <div className="grid-item grid-item-files"><FileTree setFileUrl={setFileUrl} setFilePath={setFilePath} filePath={filePath}
                     projectId={projectId} /></div>
                 <div className="grid-item grid-item-coding"><Editor fileUrl={fileUrl} filePath={filePath}
                     projectType={localStorage.getItem("projectName") as typeof projectTypes[0]} /></div>
